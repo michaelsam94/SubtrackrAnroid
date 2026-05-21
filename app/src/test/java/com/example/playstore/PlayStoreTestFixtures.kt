@@ -1,6 +1,7 @@
 package com.example.playstore
 
 import android.app.Application
+import com.example.ai.GeminiClient
 import com.example.db.AppDatabase
 import com.example.db.SubscriptionRepository
 import com.example.model.SeedData
@@ -8,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 
 object PlayStoreTestFixtures {
     fun resetAndSeed(application: Application) = runBlocking {
+        GeminiClient.isTesting = true
         val db = AppDatabase.getDatabase(application)
         val repo = SubscriptionRepository(db.subscriptionDao(), db.chatMessageDao())
 

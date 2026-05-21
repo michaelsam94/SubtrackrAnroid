@@ -8,15 +8,20 @@ import com.example.ScreenRoute
 import com.example.ui.theme.MyApplicationTheme
 import com.example.viewmodel.SubscriptionViewModel
 import com.github.takahirom.roborazzi.captureRoboImage
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Before
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 /** Phone Play Store size: 1080×1920 px at xxhdpi (density 3). */
 private const val PHONE_QUALIFIERS = "w360dp-h640dp-xxhdpi"
@@ -36,26 +41,21 @@ class PlayStoreScreenshotTest {
 
     private lateinit var application: Application
     private lateinit var viewModel: SubscriptionViewModel
+    private var subscriptionsCollector: Job? = null
 
     @Before
     fun setUp() {
         application = ApplicationProvider.getApplicationContext()
         PlayStoreTestFixtures.resetAndSeed(application)
         viewModel = SubscriptionViewModel(application)
-        waitForScreenshotData()
+        subscriptionsCollector = viewModel.viewModelScope.launch {
+            viewModel.subscriptions.collect {}
+        }
     }
 
-    private fun waitForScreenshotData() {
-        runBlocking {
-            withTimeout(20_000) {
-                while (viewModel.subscriptions.value.isEmpty()) {
-                    Thread.sleep(50)
-                }
-                while (viewModel.isAnalyzing.value) {
-                    Thread.sleep(50)
-                }
-            }
-        }
+    @After
+    fun tearDown() {
+        subscriptionsCollector?.cancel()
     }
 
     private fun capturePhone(screen: ScreenRoute, fileName: String) {
@@ -63,6 +63,11 @@ class PlayStoreScreenshotTest {
             MyApplicationTheme(darkTheme = true) {
                 PlayStoreScreenshotFrame(selectedRoute = screen, viewModel = viewModel)
             }
+        }
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            viewModel.subscriptions.value.isNotEmpty() &&
+                    viewModel.anomalies.value.isNotEmpty() &&
+                    !viewModel.isAnalyzing.value
         }
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().captureRoboImage(
@@ -75,6 +80,11 @@ class PlayStoreScreenshotTest {
             MyApplicationTheme(darkTheme = true) {
                 PlayStoreScreenshotFrame(selectedRoute = screen, viewModel = viewModel)
             }
+        }
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            viewModel.subscriptions.value.isNotEmpty() &&
+                    viewModel.anomalies.value.isNotEmpty() &&
+                    !viewModel.isAnalyzing.value
         }
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().captureRoboImage(
@@ -123,22 +133,21 @@ class PlayStoreFeatureGraphicTest {
     @get:Rule val composeTestRule = createComposeRule()
 
     private lateinit var viewModel: SubscriptionViewModel
+    private var subscriptionsCollector: Job? = null
 
     @Before
     fun setUp() {
         val application = ApplicationProvider.getApplicationContext<Application>()
         PlayStoreTestFixtures.resetAndSeed(application)
         viewModel = SubscriptionViewModel(application)
-        runBlocking {
-            withTimeout(20_000) {
-                while (viewModel.subscriptions.value.isEmpty()) {
-                    Thread.sleep(50)
-                }
-                while (viewModel.isAnalyzing.value) {
-                    Thread.sleep(50)
-                }
-            }
+        subscriptionsCollector = viewModel.viewModelScope.launch {
+            viewModel.subscriptions.collect {}
         }
+    }
+
+    @After
+    fun tearDown() {
+        subscriptionsCollector?.cancel()
     }
 
     @Test
@@ -148,6 +157,11 @@ class PlayStoreFeatureGraphicTest {
             MyApplicationTheme(darkTheme = true) {
                 FeatureGraphicContent(viewModel = viewModel)
             }
+        }
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            viewModel.subscriptions.value.isNotEmpty() &&
+                    viewModel.anomalies.value.isNotEmpty() &&
+                    !viewModel.isAnalyzing.value
         }
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().captureRoboImage(

@@ -46,7 +46,7 @@ fun AIChatScreen(
     // Scroll to bottom when new messages arrive
     LaunchedEffect(messages.size, isSending) {
         if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
+            listState.scrollToItem(messages.size - 1)
         }
     }
 

@@ -33,9 +33,11 @@ object GeminiClient {
     var apiKeyOverride: String? = null
     var anthropicApiKey: String? = null
     var activeAIEngine: String = "gemini"
+    var isTesting: Boolean = false
 
     // Inspect if API Key is configured and valid
     fun isApiKeyConfigured(): Boolean {
+        if (isTesting) return false
         if (activeAIEngine == "anthropic") {
             return !anthropicApiKey.isNullOrBlank()
         }
