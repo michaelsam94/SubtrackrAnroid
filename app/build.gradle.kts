@@ -13,7 +13,7 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.subtrackr.mwycxj"
+    applicationId = "com.aistudio.subtrackr"
     minSdk = 24
     targetSdk = 36
     versionCode = 3
@@ -33,15 +33,15 @@ android {
       }
       val keystorePath = System.getenv("KEYSTORE_PATH")
         ?: properties.getProperty("release.keystorePath")
-        ?: "${rootDir}/debug.keystore"
+        ?: "${rootDir}/my-upload-key.jks"
       storeFile = file(keystorePath)
       storePassword = System.getenv("STORE_PASSWORD")
         ?: properties.getProperty("release.storePassword")
-        ?: "android"
-      keyAlias = properties.getProperty("release.keyAlias") ?: "androiddebugkey"
+        ?: "subtrackrupload"
+      keyAlias = properties.getProperty("release.keyAlias") ?: "upload"
       keyPassword = System.getenv("KEY_PASSWORD")
         ?: properties.getProperty("release.keyPassword")
-        ?: "android"
+        ?: "subtrackrupload"
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
