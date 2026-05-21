@@ -33,15 +33,15 @@ android {
       }
       val keystorePath = System.getenv("KEYSTORE_PATH")
         ?: properties.getProperty("release.keystorePath")
-        ?: "${rootDir}/my-upload-key.jks"
+        ?: "${rootDir}/debug.keystore"
       storeFile = file(keystorePath)
       storePassword = System.getenv("STORE_PASSWORD")
         ?: properties.getProperty("release.storePassword")
-        ?: "subtrackrupload"
-      keyAlias = properties.getProperty("release.keyAlias") ?: "upload"
+        ?: "android"
+      keyAlias = properties.getProperty("release.keyAlias") ?: "androiddebugkey"
       keyPassword = System.getenv("KEY_PASSWORD")
         ?: properties.getProperty("release.keyPassword")
-        ?: "subtrackrupload"
+        ?: "android"
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
